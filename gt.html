@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+
+
+    <!-- include the bundled styles -->
+<link rel="stylesheet" href="/statics/@stackoverflow/stacks-editor/dist/styles.css" />
+<link rel="stylesheet" href=" https://unpkg.com/@stackoverflow/stacks@0.72.0/dist/css/stacks.min.css" />
+
+
+<!-- highlight.js is not included in the bundle, so include it as well if you want it -->
+<script src="//unpkg.com/@highlightjs/cdn-assets@latest/highlight.min.js"></script>
+
+<!-- include the bundle -->
+<script src="/statics/@stackoverflow/stacks-editor/dist/app.bundle.js"></script>
+
+    <title>Google 翻译</title>
+  </head>
+  <body class="bg-light">
+
+
+    <div class="container">
+
+      <div class="py-5 text-center">
+        <img class="mx-auto mb-4" src="https://www.gstatic.com/images/branding/googlelogo/svg/googlelogo_clr_74x24px.svg" alt="" width="72" height="72">
+        翻译
+        <p class="lead">Google 网站翻译有 5000 字的限制，在这里没有长度限制，你可以一次翻译整本书.</p>
+      </div>
+
+    <form action="translate.php" method="post" name="tForm" id="tForm">
+      <div class="row mb-3">
+              <div class="col-md-3">
+                <select class="form-select d-block w-100" id="Source" name="Source" required="">
+                  <option value="auto">自动识别</option>
+                  <option value="zh-cn">中文</option>
+                  <option value="en">英文</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <select class="form-select d-block w-100" id="Target" name="Target" required="">
+                  <option value="zh-cn">中文</option>
+                  <option value="en">英文</option>
+                </select>
+              </div>
+
+              <div class="col-md-3">
+                <button type="submit" class="btn btn-outline-primary d-block w-100">翻译</button>
+              </div>
+
+              <div class="col-md-3">
+                <button type="button" id="copy" name="copy" class="btn btn-outline-secondary d-block w-100">复制</button>
+              </div>
+
+
+
+      </div>
+    
+
+      <div class="row">
+        
+        <div class="col-md-6">
+          <div id="SourceText" ></div>
+
+<!--                <textarea class="form-control" id="SourceText" name="SourceText" rows="100" required=""></textarea> -->   
+        </div>
+        
+        <div class="col-md-6">
+          <div id="TargetText" ></div>
+          <!-- 
+              <textarea class="form-control" id="TargetText" name="TargetText" rows="100"></textarea>
+              -->
+        </div>
+      </div>
+
+    </form>
+
+     </div>
+    <!-- Optional JavaScript; choose one of the two! -->
+
+    <!-- Option 1: Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+
+    <!-- Option 2: Separate Popper and Bootstrap JS -->
+    <!--
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" crossorigin="anonymous"></script>
+    -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <script>
+ $(document).ready(function(){
+
+  var SourceText = new window.stacksEditor.StacksEditor(
+        document.querySelector("#SourceText"),
+        "*Your* **markdown** here",
+        {}
+    );
+
+
+  var TargetText =     new window.stacksEditor.StacksEditor(
+        document.querySelector("#TargetText"),
+        "*Your* **markdown** here",
+        {}
+    );
+
+
+
+
+  $("#tForm").submit(function(e) {
+    e.preventDefault(); 
+
+  var form = $(this);
+  var target = form.find("#Target").val()
+  var source = form.find("#Source").val()
+ // var content = SourceText.content;
+  var content = SourceText.dom.innerHTML;
+
+  console.log("-----------------------");
+  console.log(content);
+  console.log("-----------------------");
+  console.log(target);
+  
+  $.ajax({
+        type: "POST",
+        url: "/v1/g",
+        data: {"Target":target,"Source":source,"SourceText":content}, 
+        success: function(data)
+        {
+          if (data.code != 0) {
+            alert(data.messge);
+          } else {
+            console.log(data.data.TargetText);
+            //TargetText.content = data.data.TargetText;
+            TargetText.dom.innerHTML = data.data.TargetText;
+           // $("#TargetText").val(data.data.TargetText);
+          }
+        }
+      });
+
+
+  });
+
+
+
+
+ });
+    </script>
+    <script>
+  $("#copy").click(function(e) {
+    e.preventDefault(); 
+     $("#TargetText").select();
+    document.execCommand("copy");
+    alert("复制成功");
+  });
+
+    </script>
+  </body>
+</html>
